@@ -1,0 +1,941 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VOLT-CAD // WEG DT-11 & NBR 5410 — Electrical Engineering Workbench</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="workbench-root">
+    <!-- =====================================================================
+         1. TOP HEADER BAR (H-12) — OTIMIZADA (SEM QUEBRA DE LINHA / OVERFLOW)
+         ===================================================================== -->
+    <header class="top-header no-print">
+      <div class="header-left">
+        <div class="brand-box">
+          <div class="brand-icon">
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+          </div>
+          <span class="brand-name">VOLT&#8209;CAD</span>
+          <span class="brand-version">v5.0</span>
+        </div>
+
+        <div class="v-divider"></div>
+
+        <!-- Seletor de Módulo -->
+        <div class="module-switcher">
+          <button type="button" class="mod-btn active" id="btnMod3Ph">
+            <span>[M1] Trafo 3Ø (WEG DT-11)</span>
+          </button>
+          <button type="button" class="mod-btn" id="btnMod1Ph">
+            <span>[M2] Trafo 1Ø (E-I)</span>
+          </button>
+          <button type="button" class="mod-btn" id="btnModFeeder">
+            <span>[M3] Cabo BT (NBR 5410)</span>
+          </button>
+        </div>
+      </div>
+
+      <div class="header-right">
+        <!-- Semáforo Global ISA-101 -->
+        <div class="isa-semaphore" id="globalSemaphore">
+          <span id="globalSemaphoreIcon">●</span>
+          <span id="globalSemaphoreText">CONVERGÊNCIA OK</span>
+        </div>
+
+        <button type="button" class="btn-action btn-slate" id="btnPrintReport" title="Imprimir Folha de Dados WEG DT-11 / Memorial">
+          🖨️ <span>Imprimir A4</span>
+        </button>
+
+        <button type="button" class="hidden" id="btnOpenModal"></button>
+      </div>
+    </header>
+
+    <!-- =====================================================================
+         2. MAIN WORKSPACE (DOCK ESQUERDO + PALCO CENTRAL)
+         ===================================================================== -->
+    <div class="workspace-body">
+      <!-- -------------------------------------------------------------------
+           2.1 LEFT PARAMETER DOCK (PADRÃO 3-PART ENGINEERING INPUT)
+           ------------------------------------------------------------------- -->
+      <aside class="left-dock no-print">
+        <div class="dock-header">
+          <span>⚙️ Parâmetros</span>
+          <span id="lblHeaderNorm" style="color:var(--blue-light);font-weight:700;">ABNT NBR 5356 / WEG DT-11</span>
+        </div>
+
+        <!-- ==================== DOCK M1: TRAFO 3Ø A ÓLEO (WEG DT-11) ==================== -->
+        <div id="dockM1" class="dock-module-group" style="display:flex;flex-direction:column;gap:10px;">
+          <!-- Barra Compacta de Cenários e Auto-Ajuste do Módulo 1 (WEG DT-11) -->
+          <div class="preset-dock-grid">
+            <button type="button" class="preset-chip chip-emerald" id="btnPresetAutoFit" title="Ajusta automaticamente a seção da coluna Ac e janela Aj para suportar a potência sem saturar">
+              📏 Auto-Ajustar Núcleo
+            </button>
+            <button type="button" class="preset-chip chip-blue" id="btnPresetUser40" title="Cenário do usuário: 24kV @ 10A -> 380V @ 630A com núcleo de 40 cm²">
+              Caso 24kV→380V (40cm²)
+            </button>
+            <button type="button" class="preset-chip chip-amber" id="btnPresetCompact">
+              Alta Densidade
+            </button>
+            <button type="button" class="preset-chip chip-red" id="btnPresetOverload">
+              Teste Sobrecarga
+            </button>
+          </div>
+
+          <!-- Seção 1: Geometria e Estrutura do Núcleo -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM1_1">
+              <span class="acc-title-wrap">▾ 1. Estrutura Física do Núcleo</span>
+              <span class="acc-code">CORE-3Ø</span>
+            </button>
+            <div class="accordion-content" id="accM1_1">
+              <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btnCoreModeArea">Por Área (cm²)</button>
+                <button type="button" class="seg-btn" id="btnCoreModeDims">Por Medidas (cm)</button>
+              </div>
+
+              <!-- Subpainel por Área -->
+              <div id="subCoreArea" class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header">
+                    <span class="eng-label">Seção da Coluna</span>
+                    <span class="eng-symbol">Ac</span>
+                  </div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_Ac" class="eng-input" value="40" min="1" max="5000" step="1" />
+                    <span class="eng-unit">cm²</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_Ac">Sm líq. = 38,0 cm²</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header">
+                    <span class="eng-label">Área da Janela</span>
+                    <span class="eng-symbol">Aj</span>
+                  </div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_Aj" class="eng-input" value="40" min="1" max="15000" step="5" />
+                    <span class="eng-unit">cm²</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_Aj">Agrupamento espiras</div>
+                </div>
+              </div>
+
+              <!-- Subpainel por Medidas (a, b, Hj, Lj) -->
+              <div id="subCoreDims" class="grid-2 hidden">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Larg. Coluna</span><span class="eng-symbol">a</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_colA" class="eng-input" value="6.32" min="1" max="150" step="0.1" />
+                    <span class="eng-unit">cm</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Empilhamento</span><span class="eng-symbol">b</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_colB" class="eng-input" value="6.33" min="1" max="150" step="0.1" />
+                    <span class="eng-unit">cm</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Altura Janela</span><span class="eng-symbol">Hj</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_winH" class="eng-input" value="10.0" min="2" max="300" step="0.5" />
+                    <span class="eng-unit">cm</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Larg. Janela</span><span class="eng-symbol">Lj</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_winW" class="eng-input" value="4.0" min="1" max="150" step="0.5" />
+                    <span class="eng-unit">cm</span>
+                  </div>
+                </div>
+              </div>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Indução Máx.</span><span class="eng-symbol">Bm</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_Bm" class="eng-input" value="1.65" min="0.5" max="1.95" step="0.05" />
+                    <span class="eng-unit">T</span>
+                  </div>
+                  <div class="eng-hint">Aço GO M4: 1,55–1,72 T</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Dens. Corrente</span><span class="eng-symbol">J</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_J" class="eng-input" value="2.8" min="0.8" max="5.5" step="0.1" />
+                    <span class="eng-unit">A/mm²</span>
+                  </div>
+                  <div class="eng-hint">Óleo ONAN: ≤ 3,2 A/mm²</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fat. Ocupação</span><span class="eng-symbol">Ku</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_Ku" class="eng-input" value="0.38" min="0.15" max="0.75" step="0.01" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                  <div class="eng-hint">Fração útil de cobre</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Chapa / Condutor</span><span class="eng-symbol">Mat</span></div>
+                  <select id="m1_Mat" class="eng-select">
+                    <option value="cobre" selected>Cobre + Aço GO M4</option>
+                    <option value="aluminio">Alumínio + Aço GO M4</option>
+                  </select>
+                  <div class="eng-hint">Isolação Carlite (Ke=0,95)</div>
+                </div>
+              </div>
+
+              <button type="button" class="btn-action btn-blue" id="btnDockAutoFit" style="width:100%;justify-content:center;">
+                📏 Auto-Ajustar Núcleo (Ac e Aj) p/ Carga Atual
+              </button>
+            </div>
+          </div>
+
+          <!-- Seção 2: Tensões, Correntes e Faixa de Taps -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM1_2">
+              <span class="acc-title-wrap">▾ 2. Tensões, Correntes &amp; Taps</span>
+              <span class="acc-code">RATINGS</span>
+            </button>
+            <div class="accordion-content" id="accM1_2">
+              <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btnPwr3Ph" title="S = √3 · U_L · I_L (Padrão ABNT Trifásico)">3Ø Linha (√3·U·I)</button>
+                <button type="button" class="seg-btn" id="btnPwrDirect" title="S = U · I direto (24kV × 10A = 240 kVA)">Direto (U × I)</button>
+              </div>
+
+              <label class="dock-check-row">
+                <input type="checkbox" id="m1_syncI2" />
+                <span>Sincronizar corrente <i>I₂</i> ao variar tensões (<i>U₁·I₁ = U₂·I₂</i>)</span>
+              </label>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Tensão Entrada</span><span class="eng-symbol">U₁</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_V1_kV" class="eng-input" value="24" min="0.1" max="550" step="0.5" />
+                    <span class="eng-unit">kV</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_V1">24.000 V (Classe 24,2kV)</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Corrente Entrada</span><span class="eng-symbol">I₁</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_I1" class="eng-input" value="10" min="0.1" max="5000" step="0.5" />
+                    <span class="eng-unit">A</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_I1">If bobina = 5,77 A (Δ)</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Tensão Saída</span><span class="eng-symbol">U₂</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_V2" class="eng-input" value="380" min="12" max="36200" step="10" />
+                    <span class="eng-unit">V</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_V2">Fase-Neutro = 219,4 V</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Corrente Saída</span><span class="eng-symbol">I₂</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_I2" class="eng-input" value="630" min="0.5" max="50000" step="10" />
+                    <span class="eng-unit">A</span>
+                  </div>
+                  <div class="eng-hint" id="hintM1_I2">If bobina = 630,0 A (Yn)</div>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Grupo Ligação</span><span class="eng-symbol">Vec</span></div>
+                  <select id="m1_Vec" class="eng-select">
+                    <option value="Dyn1" selected>Dyn1 (Δ / Yn -30°)</option>
+                    <option value="Dyn11">Dyn11 (Δ / Yn +30°)</option>
+                    <option value="Yd1">Yd1 (Y / Δ -30°)</option>
+                    <option value="Yy0">Yy0 (Y / Y 0°)</option>
+                    <option value="Dz0">Dz0 (Δ / Zig-Zag 0°)</option>
+                  </select>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Faixa Derivações</span><span class="eng-symbol">Taps</span></div>
+                  <select id="m1_Taps" class="eng-select">
+                    <option value="5" selected>± 5,0% (3 pos - 24kV)</option>
+                    <option value="4.5">± 4,5% (3 pos - 15/36kV)</option>
+                    <option value="5_5pos">± 2×2,5% (5 posições)</option>
+                    <option value="10">± 10,0% (5 posições)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção 3: Líquido Isolante e Ambiente (Cap. 5.6 e 7.3 WEG DT-11) -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM1_3">
+              <span class="acc-title-wrap">▾ 3. Óleo Isolante &amp; Ambiente</span>
+              <span class="acc-code">OIL-DT11</span>
+            </button>
+            <div class="accordion-content" id="accM1_3">
+              <div class="eng-field">
+                <div class="eng-field-header"><span class="eng-label">Ambiente de Instalação</span><span class="eng-symbol">Env</span></div>
+                <select id="m1_Env" class="eng-select">
+                  <option value="tempo" selected>Subestação Ao Tempo / Industrial Padrão</option>
+                  <option value="ambiental">Área de Proteção Ambiental (Biodegradável FR3)</option>
+                  <option value="abrigado_seguranca">Abrigado / Hospital / Prédio (Alto Fulgor ≥300°C)</option>
+                  <option value="frio">Clima Frio Severo (&lt; 0 °C)</option>
+                </select>
+              </div>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Líquido Isolante</span><span class="eng-symbol">Óleo</span></div>
+                  <select id="m1_Oil" class="eng-select">
+                    <option value="mineral_A" selected>Mineral Tipo A (Naftênico)</option>
+                    <option value="mineral_B">Mineral Tipo B (Parafínico)</option>
+                    <option value="vegetal">Vegetal Éster Natural (FR3)</option>
+                    <option value="silicone">Fluido Silicone (Alto Fulgor)</option>
+                  </select>
+                </div>
+
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Temp. Ambiente</span><span class="eng-symbol">Ta</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m1_Ta" class="eng-input" value="30" min="-15" max="50" step="1" />
+                    <span class="eng-unit">°C</span>
+                  </div>
+                </div>
+              </div>
+
+              <label class="dock-check-row">
+                <input type="checkbox" id="m1_autoOil" checked />
+                <span>Recomendar automaticamente o óleo ideal p/ tensão e ambiente</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Seção 4: Síntese Rápida dos Enrolamentos e Óleo -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM1_4">
+              <span class="acc-title-wrap">▾ 4. Síntese dos Enrolamentos &amp; Óleo</span>
+              <span class="acc-code">SYNTH</span>
+            </button>
+            <div class="accordion-content" id="accM1_4">
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#f87171;font-weight:700;display:block">PRIMÁRIO (AT)</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM1_AT_sub">I₁f = 5,77 A | Sc₁ = 2,06 mm²</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fff;font-weight:700;display:block" id="synthM1_AT_turns">14.369 esp</span>
+                  <span style="color:var(--blue-light);font-size:10px" id="synthM1_AT_wire">AWG 14 Cu</span>
+                </div>
+              </div>
+
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#34d399;font-weight:700;display:block">SECUNDÁRIO (BT)</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM1_BT_sub">I₂f = 630 A | Sc₂ = 225 mm²</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fff;font-weight:700;display:block" id="synthM1_BT_turns">131 esp</span>
+                  <span style="color:#34d399;font-size:10px" id="synthM1_BT_wire">Fita Cu 56×4mm</span>
+                </div>
+              </div>
+
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#fbbf24;font-weight:700;display:block" id="synthM1_Oil_name">ÓLEO MINERAL TIPO A</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM1_Oil_sub">Tanque + Radiadores ONAN</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fbbf24;font-weight:700;display:block" id="synthM1_Oil_vol">325 Litros</span>
+                  <span style="color:var(--text-secondary);font-size:10px" id="synthM1_Oil_mass">286 kg (1,71 tamb.)</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== DOCK M2: TRAFO 1Ø (NÚCLEO E-I COMPLETO COM MULTI-ABAS E AUTO-AJUSTE NORMATIVO) ==================== -->
+        <div id="dockM2" class="dock-module-group hidden" style="display:flex;flex-direction:column;gap:10px;">
+          <!-- Barra Compacta de Cenários e Auto-Ajuste Normativo do Módulo 2 (Trafo E-I) -->
+          <div class="preset-dock-grid">
+            <button type="button" class="preset-chip chip-emerald" id="btnM2PresetAutoFit" onclick="window.triggerAutoRecalc(this)" title="Recalcula automaticamente medidas da lâmina, espaço da janela, seção, Bm e J para deixar 100% dentro da norma">
+              📏 Auto-Ajustar Tudo p/ Norma
+            </button>
+            <button type="button" class="preset-chip chip-blue" id="btnM2Preset500" title="Cenário Padrão 500 VA (220V -> 24V) 100% dentro da norma">
+              Padrão 500VA (220→24V)
+            </button>
+            <button type="button" class="preset-chip chip-amber" id="btnM2Preset1000" title="Transformador de Comando 1000 VA (380V -> 110V)">
+              Comando 1kVA (380→110V)
+            </button>
+            <button type="button" class="preset-chip chip-red" id="btnM2PresetOverload" title="Simula núcleo/janela subdimensionados fora da norma para testar o aviso e o recálculo automático">
+              Teste Fora de Norma
+            </button>
+          </div>
+
+          <!-- Caixa de Aviso / Diagnóstico Normativo em Tempo Real do Módulo 2 -->
+          <div id="m2NormAlertBox" style="padding:8px 10px;border-radius:4px;font-family:var(--font-mono);font-size:10.5px;line-height:1.4;border:1px solid var(--nom-border);background:var(--nom-bg);color:var(--nom-text);">
+            ✓ Todos os parâmetros do Trafo 1Ø E-I estão dentro da norma.
+          </div>
+
+          <!-- Seção / Aba 1 de Entrada M2: Dados Elétricos Nominais, Tensões, Correntes e Taps -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM2_1">
+              <span class="acc-title-wrap">▾ 1. Potência, Tensões &amp; Correntes</span>
+              <span class="acc-code">ELEC-1Ø</span>
+            </button>
+            <div class="accordion-content" id="accM2_1">
+              <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btnM2ElecModePower">Por Potência S (VA)</button>
+                <button type="button" class="seg-btn" id="btnM2ElecModeCurrent">Por Corrente I₂ (A)</button>
+              </div>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Potência Aparente</span><span class="eng-symbol">S</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_S" class="eng-input" value="500" min="5" max="100000" step="25" />
+                    <span class="eng-unit">VA</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_S">S = V₂ × I₂ = 500 VA</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Corrente Saída</span><span class="eng-symbol">I₂</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_I2_in" class="eng-input" value="20.83" min="0.1" max="5000" step="0.5" />
+                    <span class="eng-unit">A</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_I1">Primário I₁ = 2,39 A</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Tensão Primária</span><span class="eng-symbol">V₁</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_V1" class="eng-input" value="220" min="6" max="15000" step="10" />
+                    <span class="eng-unit">V</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_V1">N₁ = 310 espiras</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Tensão Secundária</span><span class="eng-symbol">V₂</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_V2" class="eng-input" value="24" min="1" max="5000" step="1" />
+                    <span class="eng-unit">V</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_V2">N₂ = 35 espiras</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Frequência Rede</span><span class="eng-symbol">f</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_f" class="eng-input" value="60" min="50" max="400" step="10" />
+                    <span class="eng-unit">Hz</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Compensação Queda</span><span class="eng-symbol">+ΔN₂</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_compPct" class="eng-input" value="3.5" min="0" max="15" step="0.5" />
+                    <span class="eng-unit">%</span>
+                  </div>
+                  <div class="eng-hint">Compensa queda em carga</div>
+                </div>
+              </div>
+
+              <div class="seg-group" style="margin-top:2px;">
+                <button type="button" class="seg-btn" data-m2v2="12">12 V</button>
+                <button type="button" class="seg-btn active" data-m2v2="24">24 V</button>
+                <button type="button" class="seg-btn" data-m2v2="110">110 V</button>
+                <button type="button" class="seg-btn" data-m2v2="127">127 V</button>
+                <button type="button" class="seg-btn" data-m2v2="220">220 V</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção / Aba 2 de Entrada M2: Geometria da Lâmina E-I, Tamanho & Espaço da Janela -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM2_2">
+              <span class="acc-title-wrap">▾ 2. Medidas do Núcleo &amp; Espaço da Janela</span>
+              <span class="acc-code">CORE-DIM</span>
+            </button>
+            <div class="accordion-content" id="accM2_2">
+              <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btnM2CoreModeAuto">Auto pela Potência (Kc)</button>
+                <button type="button" class="seg-btn" id="btnM2CoreModeManual">Manual (Medidas &amp; Espaço)</button>
+              </div>
+
+              <!-- Subpainel Automático por Coeficiente Kc e Empilhamento Ke -->
+              <div id="subM2CoreAuto" class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Coef. Dimensionamento</span><span class="eng-symbol">Kc</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_Kc" class="eng-input" value="1.18" min="0.5" max="2.5" step="0.02" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_Sm">Sm = 24,1 cm² (Sg = 26,2 cm²)</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fat. Empilhamento</span><span class="eng-symbol">Ke</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_Ke" class="eng-input" value="0.92" min="0.75" max="0.98" step="0.01" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                  <div class="eng-hint">Chapa E-I: 0,90 a 0,95</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Proporção Empilh.</span><span class="eng-symbol">b/a</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_stackRatio" class="eng-input" value="1.25" min="0.8" max="2.5" step="0.05" />
+                    <span class="eng-unit">×a</span>
+                  </div>
+                  <div class="eng-hint">Padrão carretel: 1,0 a 1,5</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fator Espaço Janela</span><span class="eng-symbol">K_jan</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_winScale" class="eng-input" value="1.00" min="0.5" max="2.5" step="0.05" />
+                    <span class="eng-unit">×padrão</span>
+                  </div>
+                  <div class="eng-hint" id="hintM2_Aw">Janela Aw = 15,6 cm²</div>
+                </div>
+              </div>
+
+              <!-- Subpainel Manual por Medidas Diretas da Lâmina e Janela (mm) -->
+              <div id="subM2CoreManual" class="grid-2 hidden">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Coluna Central (a)</span><span class="eng-symbol">a</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_a" class="eng-input" value="46" min="10" max="300" step="1" />
+                    <span class="eng-unit">mm</span>
+                  </div>
+                  <div class="eng-hint">Largura perna central E-I</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Empilhamento (b)</span><span class="eng-symbol">b</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_b" class="eng-input" value="57" min="10" max="400" step="1" />
+                    <span class="eng-unit">mm</span>
+                  </div>
+                  <div class="eng-hint">Altura do pacote de chapas</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Largura Janela (Lj)</span><span class="eng-symbol">Lj</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_winW" class="eng-input" value="23" min="5" max="200" step="0.5" />
+                    <span class="eng-unit">mm</span>
+                  </div>
+                  <div class="eng-hint">Espaço radial p/ espiras</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Altura Janela (Hj)</span><span class="eng-symbol">Hj</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_winH" class="eng-input" value="69" min="15" max="500" step="1" />
+                    <span class="eng-unit">mm</span>
+                  </div>
+                  <div class="eng-hint">Altura útil do carretel</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção / Aba 3 de Entrada M2: Critérios Eletromagnéticos, Chapa, Isolamento e Limites Normativos -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM2_3">
+              <span class="acc-title-wrap">▾ 3. Magnético, Isolamento &amp; Limites</span>
+              <span class="acc-code">MAG/ISO</span>
+            </button>
+            <div class="accordion-content" id="accM2_3">
+              <div class="eng-field">
+                <div class="eng-field-header"><span class="eng-label">Tipo de Chapa Magnética</span><span class="eng-symbol">FE-SI</span></div>
+                <select id="m2_steelType" class="eng-select">
+                  <option value="1.15" selected>Aço Silício GNO Padrão ABNT (Bm ideal ≤ 1,25 T)</option>
+                  <option value="1.22">Aço Silício GNO Baixa Perda (Bm ideal ≤ 1,30 T)</option>
+                  <option value="1.40">Aço Silício Grão Orientado GO (Bm ideal ≤ 1,50 T)</option>
+                </select>
+              </div>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Indução Magnética</span><span class="eng-symbol">Bm</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_Bm" class="eng-input" value="1.15" min="0.5" max="1.85" step="0.05" />
+                    <span class="eng-unit">T</span>
+                  </div>
+                  <div class="eng-hint">Norma GNO: ≤ 1,25 T</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Dens. Corrente</span><span class="eng-symbol">J</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_J" class="eng-input" value="2.5" min="1.0" max="6.0" step="0.1" />
+                    <span class="eng-unit">A/mm²</span>
+                  </div>
+                  <div class="eng-hint">Norma Seco: ≤ 3,0 A/mm²</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Limite Ocup. Janela</span><span class="eng-symbol">Ku_máx</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_limKu" class="eng-input" value="42" min="20" max="70" step="1" />
+                    <span class="eng-unit">%</span>
+                  </div>
+                  <div class="eng-hint">Carretel E-I: ≤ 42%</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Limite Regulação</span><span class="eng-symbol">ΔV_máx</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_limReg" class="eng-input" value="4.5" min="1.5" max="10" step="0.5" />
+                    <span class="eng-unit">%</span>
+                  </div>
+                  <div class="eng-hint">ABNT / IEC: ≤ 4,5%</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Classe Térmica</span><span class="eng-symbol">CLASSE</span></div>
+                  <select id="m2_insClass" class="eng-select">
+                    <option value="130">Classe B (130 °C)</option>
+                    <option value="155" selected>Classe F (155 °C)</option>
+                    <option value="180">Classe H (180 °C)</option>
+                  </select>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Temp. Ambiente</span><span class="eng-symbol">Ta</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m2_Ta" class="eng-input" value="30" min="0" max="55" step="1" />
+                    <span class="eng-unit">°C</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Seção / Aba 4 de Entrada M2: Síntese Rápida dos Enrolamentos, Tamanho e Validação -->
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM2_4">
+              <span class="acc-title-wrap">▾ 4. Síntese das Bobinas &amp; Tamanho 1Ø</span>
+              <span class="acc-code">SYNTH-1Ø</span>
+            </button>
+            <div class="accordion-content" id="accM2_4">
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#f87171;font-weight:700;display:block">PRIMÁRIO 1Ø (N₁)</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM2_Pri_sub">I₁ = 2,39 A | Sc₁ = 0,95 mm²</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fff;font-weight:700;display:block" id="synthM2_Pri_turns">310 esp</span>
+                  <span style="color:var(--blue-light);font-size:10px" id="synthM2_Pri_wire">AWG 17 Cu</span>
+                </div>
+              </div>
+
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#34d399;font-weight:700;display:block">SECUNDÁRIO 1Ø (N₂)</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM2_Sec_sub">I₂ = 20,83 A | Sc₂ = 8,33 mm²</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fff;font-weight:700;display:block" id="synthM2_Sec_turns">35 esp</span>
+                  <span style="color:#34d399;font-size:10px" id="synthM2_Sec_wire">AWG 8 Cu</span>
+                </div>
+              </div>
+
+              <div class="synth-mini-card">
+                <div>
+                  <span style="color:#fbbf24;font-weight:700;display:block" id="synthM2_Core_name">LÂMINA E-I (46×57 mm)</span>
+                  <span style="color:var(--text-muted);font-size:10px" id="synthM2_Core_sub">Janela Ku = 38,5% (≤ 42%)</span>
+                </div>
+                <div class="text-right">
+                  <span style="color:#fbbf24;font-weight:700;display:block" id="synthM2_Core_dim">152×119×137 mm</span>
+                  <span style="color:var(--text-secondary);font-size:10px" id="synthM2_Core_mass">Peso Total: 6,85 kg</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ==================== DOCK M3: ALIMENTADOR BT (ABNT NBR 5410) ==================== -->
+        <div id="dockM3" class="dock-module-group hidden" style="display:flex;flex-direction:column;gap:10px;">
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM3_1">
+              <span class="acc-title-wrap">▾ 1. Topologia &amp; Carga BT (Até 20.000 kW)</span>
+              <span class="acc-code">LOAD</span>
+            </button>
+            <div class="accordion-content" id="accM3_1">
+              <div class="seg-group">
+                <button type="button" class="seg-btn active" id="btnFeeder3F">3Ø Trifásico (3F+N)</button>
+                <button type="button" class="seg-btn" id="btnFeeder1F">1Ø Monofásico (F+N)</button>
+              </div>
+
+              <div class="seg-group">
+                <button type="button" class="preset-chip chip-blue" id="btnM3Preset2800" title="Simular Alimentador de Alta Potência 2800 kW em 380V">
+                  ⚡ Teste 2.800 kW (380V)
+                </button>
+                <button type="button" class="preset-chip chip-emerald" id="btnM3AutoRecalc" title="Recalcular e selecionar automaticamente cabos em paralelo e disjuntor">
+                  🔄 Auto-Recalcular M3
+                </button>
+              </div>
+
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Tensão Nominal</span><span class="eng-symbol">Un</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_Vll" class="eng-input" value="380" min="110" max="1000" step="10" />
+                    <span class="eng-unit">V</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header">
+                    <span class="eng-label">Unid. Potência</span>
+                    <span class="eng-symbol">kW / W</span>
+                  </div>
+                  <select id="m3_pUnit" class="eng-select">
+                    <option value="kW" selected>Quilowatts (kW)</option>
+                    <option value="W">Watts (W)</option>
+                  </select>
+                </div>
+                <div class="eng-field" style="grid-column: span 2;">
+                  <div class="eng-field-header"><span class="eng-label">Potência Ativa da Carga (ex: 2800 kW)</span><span class="eng-symbol">P</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_P" class="eng-input" value="2800" min="0.1" max="50000000" step="10" />
+                    <span class="eng-unit" id="lblM3Unit">kW</span>
+                  </div>
+                  <div class="eng-hint" id="hintM3_P">Equiv: 2.800.000 W (2,80 MW) | Dimensiona 1× a 25× cabos/fase</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fator Potência</span><span class="eng-symbol">cos φ</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_fp" class="eng-input" value="0.88" min="0.5" max="1.0" step="0.01" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Comprimento</span><span class="eng-symbol">L</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_L" class="eng-input" value="68" min="1" max="2000" step="5" />
+                    <span class="eng-unit">m</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="accordion">
+            <button type="button" class="accordion-trigger" data-acc="accM3_2">
+              <span class="acc-title-wrap">▾ 2. Isolação, Paralelismo &amp; NBR 5410 (Até 300 mm²)</span>
+              <span class="acc-code">DERATING</span>
+            </button>
+            <div class="accordion-content" id="accM3_2">
+              <div class="eng-field">
+                <div class="eng-field-header"><span class="eng-label">Isolação do Cabo (Catálogo Prysmian / Cobrecom)</span><span class="eng-symbol">Isol.</span></div>
+                <select id="m3_insul" class="eng-select">
+                  <option value="xlpe" selected>EPR / XLPE 90 °C — Tab. 37 NBR 5410 (Eprotenax / Sintenax 0,6/1kV)</option>
+                  <option value="pvc">PVC 70 °C — Tab. 36 NBR 5410 (750V / 0,6/1kV)</option>
+                </select>
+              </div>
+              <div class="eng-field">
+                <div class="eng-field-header"><span class="eng-label">Condutores em Paralelo por Fase (NBR 5410 item 6.2.5.6)</span><span class="eng-symbol">N_par</span></div>
+                <select id="m3_parallel" class="eng-select">
+                  <option value="0" selected>AUTO (Calcula 1× a 25× Cabos/Fase automaticamente)</option>
+                  <option value="1">Manual: 1× Cabo por Fase</option>
+                  <option value="2">Manual: 2× Cabos em Paralelo / Fase</option>
+                  <option value="3">Manual: 3× Cabos em Paralelo / Fase</option>
+                  <option value="4">Manual: 4× Cabos em Paralelo / Fase</option>
+                  <option value="6">Manual: 6× Cabos em Paralelo / Fase</option>
+                  <option value="8">Manual: 8× Cabos em Paralelo / Fase</option>
+                  <option value="10">Manual: 10× Cabos em Paralelo / Fase</option>
+                  <option value="12">Manual: 12× Cabos em Paralelo / Fase</option>
+                  <option value="15">Manual: 15× Cabos em Paralelo / Fase</option>
+                  <option value="20">Manual: 20× Cabos em Paralelo / Fase</option>
+                </select>
+              </div>
+              <div class="grid-2">
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fat. Agrupamento</span><span class="eng-symbol">FCA</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_fca" class="eng-input" value="0.87" min="0.4" max="1.0" step="0.02" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                  <div class="eng-hint">Tab. 42 NBR 5410</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Fat. Temperatura</span><span class="eng-symbol">FCT</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_fct" class="eng-input" value="0.94" min="0.6" max="1.1" step="0.02" />
+                    <span class="eng-unit">p.u.</span>
+                  </div>
+                  <div class="eng-hint">Tab. 40 (70°C / 90°C)</div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Limite Queda ΔV</span><span class="eng-symbol">ΔVmax</span></div>
+                  <div class="eng-input-wrap">
+                    <input type="number" id="m3_limDv" class="eng-input" value="4.0" min="1.0" max="7.0" step="0.5" />
+                    <span class="eng-unit">%</span>
+                  </div>
+                </div>
+                <div class="eng-field">
+                  <div class="eng-field-header"><span class="eng-label">Seção Forçada</span><span class="eng-symbol">S_cabo</span></div>
+                  <select id="m3_manualSec" class="eng-select">
+                    <option value="0">AUTO (NBR 5410: 1,5 a 300 mm²)</option>
+                    <option value="1.5">Manual: 1,5 mm² (16 AWG)</option>
+                    <option value="2.5">Manual: 2,5 mm² (14 AWG)</option>
+                    <option value="4">Manual: 4,0 mm² (12 AWG)</option>
+                    <option value="6">Manual: 6,0 mm² (10 AWG)</option>
+                    <option value="10">Manual: 10,0 mm² (8 AWG)</option>
+                    <option value="16">Manual: 16,0 mm² (6 AWG)</option>
+                    <option value="25">Manual: 25,0 mm² (4 AWG)</option>
+                    <option value="35">Manual: 35,0 mm² (2 AWG)</option>
+                    <option value="50">Manual: 50,0 mm² (1/0 AWG)</option>
+                    <option value="70">Manual: 70,0 mm² (2/0 AWG)</option>
+                    <option value="95">Manual: 95,0 mm² (3/0 AWG)</option>
+                    <option value="120">Manual: 120,0 mm² (4/0 AWG)</option>
+                    <option value="150">Manual: 150,0 mm² (300 MCM)</option>
+                    <option value="185">Manual: 185,0 mm² (350 MCM)</option>
+                    <option value="240">Manual: 240,0 mm² (500 MCM)</option>
+                    <option value="300">Manual: 300,0 mm² (600 MCM)</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </aside>
+
+      <!-- -------------------------------------------------------------------
+           2.2 CENTER / RIGHT INTERACTIVE STAGE
+           ------------------------------------------------------------------- -->
+      <main class="center-stage">
+        <!-- Barra Superior de Abas do Palco + Botão Global de Recálculo -->
+        <div class="stage-tabbar no-print">
+          <div class="tab-list">
+            <button type="button" class="stage-tab active" data-tab="svg">
+              <span id="tabTitle_1">[1] Esquemático SVG</span>
+            </button>
+            <button type="button" class="stage-tab" data-tab="oil">
+              <span id="tabTitle_2">[2] Térmica, Óleo &amp; Tamanho</span>
+            </button>
+            <button type="button" class="stage-tab" data-tab="curves">
+              <span id="tabTitle_3">[3] Curvas &amp; Faixa de Tensão</span>
+            </button>
+            <button type="button" class="stage-tab" data-tab="table">
+              <span id="tabTitle_4">[4] Folha de Dados &amp; Tabelas</span>
+            </button>
+            <button type="button" class="stage-tab" data-tab="memorial">
+              <span id="tabTitle_5">[5] Forma de Cálculo (Memorial)</span>
+            </button>
+            <button type="button" class="stage-tab" data-tab="scripts">
+              <span id="tabTitle_6">[6] Scripts (.m / .py)</span>
+            </button>
+          </div>
+          <button type="button" class="preset-chip chip-emerald" id="btnStageAutoRecalc" style="flex-shrink:0;padding:4px 10px;" title="Recalcular e Auto-Dimensionar automaticamente o módulo ativo">
+            🔄 Recalcular &amp; Auto-Dimensionar
+          </button>
+        </div>
+
+        <!-- Viewport Central Dinâmico -->
+        <div class="stage-viewport">
+          <!-- ABA 1: ESQUEMÁTICO & GEOMETRIA VETORIAL (SVG CAD) -->
+          <section id="tabPane_svg" class="tab-pane" style="height:100%;">
+            <div class="cad-blueprint">
+              <div class="cad-floating-legend">
+                <div style="color:var(--text-primary);font-weight:700;" id="svgLegendTitle">
+                  ✨ GEOMETRIA NÚCLEO TRIFÁSICO A ÓLEO (3 COLUNAS STEP-LAP) + CORTE TRANSVERSAL
+                </div>
+                <div style="display:flex;gap:14px;font-size:10px;color:var(--text-muted);flex-wrap:wrap;">
+                  <span><b style="color:#3b82f6">■</b> Primário AT / Fase</span>
+                  <span><b style="color:#10b981">■</b> Secundário BT / Proteção OK</span>
+                  <span><b style="color:#64748b">■</b> Núcleo Aço Silício</span>
+                  <span><b style="color:#f59e0b">■</b> Óleo Isolante / Alerta</span>
+                </div>
+              </div>
+
+              <!-- Controles de Zoom, Cotas e Recálculo Flutuantes no Topo Direito do Canvas SVG -->
+              <div class="canvas-tools cad-floating-tools" id="svgToolbar">
+                <button type="button" class="preset-chip chip-emerald" onclick="window.triggerAutoRecalc(this)">🔄 Auto-Ajustar</button>
+                <button type="button" class="tool-btn active" id="btnToggleCotas">👁️ Cotas</button>
+                <button type="button" class="tool-btn" id="btnZoomOut">−</button>
+                <span class="mono" style="font-size:11px;color:var(--text-muted);width:40px;text-align:center;" id="lblZoomPct">100%</span>
+                <button type="button" class="tool-btn" id="btnZoomIn">+</button>
+                <button type="button" class="tool-btn" id="btnZoomReset" title="Resetar Zoom">↺</button>
+              </div>
+
+              <div id="svgCanvasContainer" style="width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;"></div>
+
+              <div class="cad-floating-status" id="svgBottomBanner"></div>
+            </div>
+          </section>
+
+          <!-- ABA 2: ÓLEO ISOLANTE, VOLUME, RADIADORES E VIDA ÚTIL TÉRMICA -->
+          <section id="tabPane_oil" class="tab-pane hidden">
+            <div id="oilTabContent"></div>
+          </section>
+
+          <!-- ABA 3: CURVAS DE SATURAÇÃO, BALANÇO DE PERDAS E FAIXA DE TENSÃO (TAPS) -->
+          <section id="tabPane_curves" class="tab-pane hidden">
+            <div id="curvesTabContent"></div>
+          </section>
+
+          <!-- ABA 4: TABELAS DE DIMENSIONAMENTO, CAMADAS RALE/ETRAFO E FOLHA DE DADOS WEG DT-11 -->
+          <section id="tabPane_table" class="tab-pane hidden">
+            <div id="tableTabContent"></div>
+          </section>
+
+          <!-- ABA 5: MEMORIAL DE CÁLCULO ANALÍTICO PASSO A PASSO -->
+          <section id="tabPane_memorial" class="tab-pane hidden">
+            <div id="memorialTabContent"></div>
+          </section>
+
+          <!-- ABA 6: SCRIPTS (.CURSORRULES / MATLAB / PYTHON) -->
+          <section id="tabPane_scripts" class="tab-pane hidden">
+            <div class="cae-panel">
+              <div class="cae-panel-header">
+                <span>💻 GERADOR DE SCRIPTS DE ENGENHARIA SINCRONIZADOS EM TEMPO REAL</span>
+                <div style="display:flex;gap:6px;flex-wrap:wrap;">
+                  <button type="button" class="preset-chip chip-emerald" onclick="window.triggerAutoRecalc(this)">🔄 Recalcular &amp; Auto-Dimensionar</button>
+                  <button type="button" class="tool-btn active" data-script-lang="matlab">MATLAB App (uifigure .m)</button>
+                  <button type="button" class="tool-btn" data-script-lang="python">Python CAE (.py)</button>
+                  <button type="button" class="tool-btn" data-script-lang="cursorrules">Antigravity (.cursorrules)</button>
+                  <button type="button" class="btn-action btn-blue" id="btnCopyScriptInline" style="height:26px;">📋 Copiar Script</button>
+                </div>
+              </div>
+              <div class="cae-panel-body">
+                <pre class="code-pre" id="preScriptContent" style="max-height:calc(100vh - 280px);"></pre>
+              </div>
+            </div>
+          </section>
+        </div>
+
+        <!-- =================================================================
+             3. BOTTOM SUMMARY STRIP (6 NORMATIVE KPI CARDS SEMPRE VISÍVEIS)
+             ================================================================= -->
+        <footer class="bottom-kpi-strip no-print" id="bottomKpiStrip"></footer>
+      </main>
+    </div>
+
+    <!-- Modal de Exportação de Scripts e Memorial -->
+    <div class="modal-backdrop hidden" id="exportModal">
+      <div class="modal-box">
+        <div style="display:flex;justify-content:space-between;align-items:center;border-bottom:1px solid var(--border-main);padding-bottom:8px;">
+          <span class="mono" style="font-weight:700;color:var(--blue-light);font-size:12px;">
+            &lt;/&gt; EXPORTAÇÃO DE SCRIPTS E MEMORIAL (.M / .PY / .CURSORRULES)
+          </span>
+          <button type="button" class="tool-btn" id="btnCloseModal">[FECHAR]</button>
+        </div>
+        <div style="display:flex;gap:6px;">
+          <button type="button" class="tool-btn active" data-modal-lang="matlab">Script MATLAB (.m)</button>
+          <button type="button" class="tool-btn" data-modal-lang="python">Script Python (.py)</button>
+          <button type="button" class="tool-btn" data-modal-lang="cursorrules">Regras Antigravity (.cursorrules)</button>
+        </div>
+        <pre class="code-pre" id="modalScriptPre"></pre>
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <button type="button" class="btn-action btn-slate" id="btnCopyModalScript">📋 Copiar Código</button>
+          <button type="button" class="btn-action btn-blue" id="btnDoneModal">Concluído</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
